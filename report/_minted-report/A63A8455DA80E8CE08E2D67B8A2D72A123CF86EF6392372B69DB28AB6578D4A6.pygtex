@@ -1,0 +1,27 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{k+kn}{import} \PYG{n+nn}{createLogisticModel} \PYG{k}{as} \PYG{n+nn}{clm}
+\PYG{k+kn}{import} \PYG{n+nn}{GloVe}
+
+\PYG{n}{glv} \PYG{o}{=} \PYG{n}{GloVe}\PYG{o}{.}\PYG{n}{GloVe}\PYG{p}{()}
+\PYG{n}{model\PYGZus{}url} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}./models/gloveModel.pkl\PYGZsq{}}
+
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{vstack}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sentence\PYGZus{}embedding\PYGZsq{}}\PYG{p}{])}
+\PYG{n}{y} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}isUQ\PYGZsq{}}\PYG{p}{]}
+
+\PYG{n}{X\PYGZus{}train}\PYG{p}{,} \PYG{n}{X\PYGZus{}test}\PYG{p}{,} \PYG{n}{y\PYGZus{}train}\PYG{p}{,} \PYG{n}{y\PYGZus{}test} \PYG{o}{=} \PYG{n}{train\PYGZus{}test\PYGZus{}split}\PYG{p}{(}
+        \PYG{n}{X}\PYG{p}{,}
+        \PYG{n}{y}\PYG{p}{,}
+        \PYG{n}{test\PYGZus{}size}\PYG{o}{=}\PYG{l+m+mf}{0.3}\PYG{p}{,}
+        \PYG{n}{random\PYGZus{}state}\PYG{o}{=}\PYG{l+m+mi}{1}
+        \PYG{p}{)}
+
+\PYG{n}{E} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{glv}\PYG{o}{.}\PYG{n}{embeddings}\PYG{p}{)}
+\PYG{n}{clf} \PYG{o}{=} \PYG{n}{clm}\PYG{o}{.}\PYG{n}{get\PYGZus{}model}\PYG{p}{(}\PYG{n}{X\PYGZus{}train}\PYG{p}{,} \PYG{n}{y\PYGZus{}train}\PYG{p}{,} \PYG{n}{url}\PYG{o}{=}\PYG{n}{model\PYGZus{}url}\PYG{p}{)}
+
+
+\PYG{n}{distances} \PYG{o}{=} \PYG{n}{cosine\PYGZus{}similarity}\PYG{p}{(}\PYG{n}{E}\PYG{p}{,} \PYG{n}{clf}\PYG{o}{.}\PYG{n}{coef\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{))}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{()}
+
+\PYG{n}{top\PYGZus{}positive\PYGZus{}features} \PYG{o}{=} \PYG{p}{[}\PYG{n}{glv}\PYG{o}{.}\PYG{n}{indx2word}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argsort}\PYG{p}{(}\PYG{n}{distances}\PYG{p}{)[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{10}\PYG{p}{:][::}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]]}
+\PYG{n}{top\PYGZus{}negative\PYGZus{}features} \PYG{o}{=} \PYG{p}{[}\PYG{n}{glv}\PYG{o}{.}\PYG{n}{indx2word}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argsort}\PYG{p}{(}\PYG{n}{distances}\PYG{p}{)[:}\PYG{l+m+mi}{10}\PYG{p}{]]}
+\end{Verbatim}

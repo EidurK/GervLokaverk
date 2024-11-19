@@ -1,0 +1,36 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{re}
+\PYG{k+kn}{import} \PYG{n+nn}{GloVe}
+\PYG{c+c1}{\PYGZsh{} takes in a string and tries to remove all useless symbols}
+\PYG{k}{def} \PYG{n+nf}{fix\PYGZus{}text}\PYG{p}{(}\PYG{n}{text}\PYG{p}{):}
+    \PYG{n}{text} \PYG{o}{=} \PYG{n}{text}\PYG{o}{.}\PYG{n}{lower}\PYG{p}{()}
+    \PYG{n}{text} \PYG{o}{=} \PYG{n}{re}\PYG{o}{.}\PYG{n}{sub}\PYG{p}{(}\PYG{l+s+sa}{r}\PYG{l+s+s2}{\PYGZdq{}[!@\PYGZsh{}\PYGZti{}\PYGZdl{}\PYGZpc{}\PYGZca{}\PYGZam{}*()\PYGZbs{}[\PYGZbs{}]}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{|}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+s2}{+\PYGZus{}\PYGZbs{}\PYGZhy{}=/?,.\PYGZgt{}\PYGZlt{};:]\PYGZdq{}}\PYG{p}{,}\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{,}\PYG{n}{text}\PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{text}\PYG{o}{.}\PYG{n}{split}\PYG{p}{()}
+
+\PYG{n}{submission\PYGZus{}data\PYGZus{}link} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}../data/Hashed\PYGZus{}Q\PYGZus{}Submissions\PYGZus{}Raw\PYGZus{}Combined.csv\PYGZsq{}}
+\PYG{n}{user\PYGZus{}data\PYGZus{}link} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}../data/Hashed\PYGZus{}allAuthorStatus.csv\PYGZsq{}}
+\PYG{n}{glove} \PYG{o}{=} \PYG{n}{GloVe}\PYG{o}{.}\PYG{n}{GloVe}\PYG{p}{()}
+\PYG{n}{df\PYGZus{}submissions} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{submission\PYGZus{}data\PYGZus{}link}\PYG{p}{)}
+\PYG{n}{df\PYGZus{}user} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{user\PYGZus{}data\PYGZus{}link}\PYG{p}{)}
+
+\PYG{n}{df\PYGZus{}submissions} \PYG{o}{=} \PYG{n}{df\PYGZus{}submissions}\PYG{o}{.}\PYG{n}{get}\PYG{p}{([}\PYG{l+s+s1}{\PYGZsq{}subreddit\PYGZsq{}}\PYG{p}{,}\PYG{l+s+s1}{\PYGZsq{}score\PYGZsq{}}\PYG{p}{,}\PYG{l+s+s1}{\PYGZsq{}title\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}text\PYGZsq{}}\PYG{p}{,}\PYG{l+s+s1}{\PYGZsq{}author\PYGZsq{}}\PYG{p}{,}\PYG{l+s+s1}{\PYGZsq{}date\PYGZus{}created\PYGZsq{}}\PYG{p}{])}
+
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{df\PYGZus{}submissions}\PYG{o}{.}\PYG{n}{merge}\PYG{p}{(}
+  \PYG{n}{df\PYGZus{}user}\PYG{p}{[[}\PYG{l+s+s1}{\PYGZsq{}QAuthor\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}isUQ\PYGZsq{}}\PYG{p}{]],}
+  \PYG{n}{left\PYGZus{}on}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}author\PYGZsq{}}\PYG{p}{,}
+  \PYG{n}{right\PYGZus{}on}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}QAuthor\PYGZsq{}}\PYG{p}{,}
+  \PYG{n}{how}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}left\PYGZsq{}}
+\PYG{p}{)}
+
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{drop}\PYG{p}{(}\PYG{n}{columns}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}QAuthor\PYGZsq{}}\PYG{p}{])}
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{()}
+
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}text\PYGZus{}split\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}text\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{apply}\PYG{p}{(}\PYG{n}{fix\PYGZus{}text}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} The glove.average\PYGZus{}post\PYGZus{}vector finds the average vector of all word embeddings for words in a post.}
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sentence\PYGZus{}embedding\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}text\PYGZus{}split\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{apply}\PYG{p}{(}\PYG{n}{glove}\PYG{o}{.}\PYG{n}{average\PYGZus{}post\PYGZus{}vector}\PYG{p}{)}
+
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{()}
+
+\PYG{c+c1}{\PYGZsh{} save the dataframe so that I won\PYGZsq{}t have to run this each time I run the classifiers.}
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{to\PYGZus{}pickle}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}../data/dataframe.pkl\PYGZdq{}}\PYG{p}{)}
+\end{Verbatim}

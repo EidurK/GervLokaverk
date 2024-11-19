@@ -1,0 +1,34 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{c+c1}{\PYGZsh{} Creates and trains logistic regression model and saves it.}
+\PYG{c+c1}{\PYGZsh{} If a model exists it loads it instead}
+\PYG{k+kn}{import} \PYG{n+nn}{createLogisticModel} \PYG{k}{as} \PYG{n+nn}{clm}
+
+\PYG{n}{model\PYGZus{}url} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}./models/vectorized\PYGZus{}model.pkl\PYGZsq{}}
+
+\PYG{n}{vectorizer} \PYG{o}{=} \PYG{n}{TfidfVectorizer}\PYG{p}{(}
+  \PYG{n}{max\PYGZus{}features}\PYG{o}{=}\PYG{l+m+mi}{100}\PYG{p}{,}
+  \PYG{n}{analyzer}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}word\PYGZsq{}}\PYG{p}{,}
+  \PYG{n}{stop\PYGZus{}words}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}english\PYGZsq{}}
+\PYG{p}{)}
+
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{vectorizer}\PYG{o}{.}\PYG{n}{fit\PYGZus{}transform}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}text\PYGZsq{}}\PYG{p}{])}
+\PYG{n}{y} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}isUQ\PYGZsq{}}\PYG{p}{]}
+
+\PYG{n}{X\PYGZus{}train}\PYG{p}{,} \PYG{n}{X\PYGZus{}test}\PYG{p}{,} \PYG{n}{y\PYGZus{}train}\PYG{p}{,} \PYG{n}{y\PYGZus{}test} \PYG{o}{=} \PYG{n}{train\PYGZus{}test\PYGZus{}split}\PYG{p}{(}
+        \PYG{n}{X}\PYG{p}{,}
+        \PYG{n}{y}\PYG{p}{,}
+        \PYG{n}{test\PYGZus{}size}\PYG{o}{=}\PYG{l+m+mf}{0.3}\PYG{p}{,}
+        \PYG{n}{random\PYGZus{}state}\PYG{o}{=}\PYG{l+m+mi}{1}
+        \PYG{p}{)}
+
+\PYG{n}{clf} \PYG{o}{=} \PYG{n}{clm}\PYG{o}{.}\PYG{n}{get\PYGZus{}model}\PYG{p}{(}\PYG{n}{X\PYGZus{}train}\PYG{p}{,} \PYG{n}{y\PYGZus{}train}\PYG{p}{)}
+
+
+\PYG{n}{feature\PYGZus{}names} \PYG{o}{=} \PYG{n}{vectorizer}\PYG{o}{.}\PYG{n}{get\PYGZus{}feature\PYGZus{}names\PYGZus{}out}\PYG{p}{()}
+\PYG{n}{classes} \PYG{o}{=} \PYG{n}{clf}\PYG{o}{.}\PYG{n}{classes\PYGZus{}}
+\PYG{n}{coefficients} \PYG{o}{=} \PYG{n}{clf}\PYG{o}{.}\PYG{n}{coef\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+
+\PYG{n}{top\PYGZus{}positive\PYGZus{}features} \PYG{o}{=} \PYG{p}{[}\PYG{n}{feature\PYGZus{}names}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argsort}\PYG{p}{(}\PYG{n}{coefficients}\PYG{p}{)[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{10}\PYG{p}{:][::}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]]}
+\PYG{n}{top\PYGZus{}negative\PYGZus{}features} \PYG{o}{=} \PYG{p}{[}\PYG{n}{feature\PYGZus{}names}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argsort}\PYG{p}{(}\PYG{n}{coefficients}\PYG{p}{)[:}\PYG{l+m+mi}{10}\PYG{p}{]]}
+\end{Verbatim}

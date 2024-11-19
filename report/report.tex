@@ -1,0 +1,181 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[icelandic]{babel}
+\usepackage{minted}
+
+\title{QAnon conspiracy}
+\author{Eiður Kristinsson}
+\date{March 2024}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\newpage
+\section{Introduction}
+\subsection{What was done}
+\subsection{Why}
+\subsection{How?}
+
+\section{Prior work}
+
+Describe briefly what has been done in the past on related projects (by others).
+Include citations to these works
+
+\section{Dataset and data processing}
+We had two datasets. One of them contains the post and UserId and some metadata. The other one contains three columns, two of them are the userId and wether the user is a QAnon-enthusiastic or QAnon-interested. 
+We merge the tables into a pandas dataframe and save it so that we won't have to load the data each time we run the code
+
+\begin{minted}{python}
+import re
+import GloVe
+# takes in a string and tries to remove all useless symbols
+def fix_text(text):
+    text = text.lower()
+    text = re.sub(r"[!@#~$%^&*()\[\]\\|{}+_\-=/?,.><;:]",'',text)
+    return text.split()
+
+submission_data_link = '../data/Hashed_Q_Submissions_Raw_Combined.csv'
+user_data_link = '../data/Hashed_allAuthorStatus.csv'
+glove = GloVe.GloVe()
+df_submissions = pd.read_csv(submission_data_link)
+df_user = pd.read_csv(user_data_link)
+
+df_submissions = df_submissions.get(['subreddit','score','title', 'text','author','date_created'])
+
+df = df_submissions.merge(
+  df_user[['QAuthor', 'isUQ']],
+  left_on='author',
+  right_on='QAuthor',
+  how='left'
+)
+
+df = df.drop(columns=['QAuthor'])
+df = df.dropna()
+
+df['text_split'] = df['text'].apply(fix_text)
+# The glove.average_post_vector finds the average vector of all word embeddings for words in a post.
+df['sentence_embedding'] = df['text_split'].apply(glove.average_post_vector)
+
+df = df.dropna()
+
+# save the dataframe so that I won't have to run this each time I run the classifiers.
+df.to_pickle("../data/dataframe.pkl")
+\end{minted}
+
+\section{Methods}
+\section{Results}
+\section{Conclusions and future work}
+\section{References}
+\section{Collaboration}
+I had no collaborators.
+
+\section{Most prevalent features}
+\subsection{Countvectorizer + Logistic regression}
+Here we find the most prevalent features of each group.
+\begin{minted}{python}
+
+# Creates and trains logistic regression model and saves it.
+# If a model exists it loads it instead
+import createLogisticModel as clm
+
+model_url = './models/vectorized_model.pkl'
+
+vectorizer = TfidfVectorizer(
+  max_features=100,
+  analyzer='word',
+  stop_words='english'
+)
+
+X = vectorizer.fit_transform(df['text'])
+y = df['isUQ']
+
+X_train, X_test, y_train, y_test = train_test_split(
+        X, 
+        y,
+        test_size=0.3,
+        random_state=1
+        )
+
+clf = clm.get_model(X_train, y_train)
+
+
+feature_names = vectorizer.get_feature_names_out()
+classes = clf.classes_
+coefficients = clf.coef_[0]
+
+top_positive_features = [feature_names[i] for i in np.argsort(coefficients)[-10:][::-1]]
+top_negative_features = [feature_names[i] for i in np.argsort(coefficients)[:10]]
+\end{minted}
+
+\begin{center}
+  \begin{tabular}[H]{|l|l|}
+    \hline
+    QAnon-enthusiastic&QAnon-interested\\
+    \hline
+    fbi&old\\
+    twitter&reddit\\
+    news&pdf\\
+    2018&looking\\
+    god&x200b\\
+    trump&com\\
+    post&dick\\
+    www&like\\
+    media&game\\
+    http&man\\
+   \hline
+  \end{tabular}
+\end{center}
+
+\subsection*{GloVe + Logistic regression}
+
+
+\begin{minted}{python}
+
+import createLogisticModel as clm
+import GloVe 
+
+glv = GloVe.GloVe()
+model_url = './models/gloveModel.pkl'
+
+X = np.vstack(df['sentence_embedding'])
+y = df['isUQ']
+
+X_train, X_test, y_train, y_test = train_test_split(
+        X, 
+        y,
+        test_size=0.3,
+        random_state=1
+        )
+
+E = np.array(glv.embeddings)
+clf = clm.get_model(X_train, y_train, url=model_url)
+
+
+distances = cosine_similarity(E, clf.coef_[0].reshape(1,-1)).flatten()
+
+top_positive_features = [glv.indx2word[i] for i in np.argsort(distances)[-10:][::-1]]
+top_negative_features = [glv.indx2word[i] for i in np.argsort(distances)[:10]]
+\end{minted}
+\begin{center}
+  \begin{tabular}[H]{|l|l|}
+    \hline
+    QAnon-interested&QAnon-enthusiastic\\
+    \hline
+    9/11&viol\\
+    operatives&half-back\\
+    nsa&tonality\\
+    cia&gornal\\
+    terror&euchre\\
+    9-11&ironi\\
+    inc&whist\\
+    fbi&dixieland\\
+    mastermind&templestowe\\
+    jare&rata\\
+    \hline
+  \end{tabular}
+\end{center}
+
+
+\end{document}
